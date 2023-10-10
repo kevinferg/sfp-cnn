@@ -28,46 +28,31 @@ def train_model_to_file(args, filename):
         print(f"Loss (validation): {result['val_hist']}\n", file=file)
     print(f"Done. Results printed to {root}_log.txt")
     
-
-def train_stress_models():
-    datasets_vor = load_tr_te_od_data("../data/stress_vor_w.mat", "../data/stress_vor_o.mat")
-    datasets_lat = load_tr_te_od_data("../data/stress_lat_w.mat", "../data/stress_lat_o.mat")
+def train_individual_models(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
     datasets = dict()
     for key in datasets_vor:
         datasets[key] = datasets_vor[key] + datasets_lat[key]
-    
+
+    if dset == "temp":
+        dset = "temp_"
+    else:
+        dset = ""
     vor_model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
     args = dict(model=vor_model, dataset=datasets_vor["tr"], valset=datasets_vor["te"])
-    train_model_to_file(args, "../models/vor_model.pth")
+    train_model_to_file(args, f"../models/{dset}vor_model.pth")
 
     lat_model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
     args = dict(model=lat_model, dataset=datasets_lat["tr"], valset=datasets_lat["te"])
-    train_model_to_file(args, "../models/lat_model.pth")
+    train_model_to_file(args, f"../models/{dset}lat_model.pth")
 
     model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
     args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"])
-    train_model_to_file(args, "../models/multi_model_6.pth")
+    train_model_to_file(args, f"../models/{dset}multi_model_6.pth")
 
-def train_temp_models():
-    datasets_vor = load_tr_te_od_data("../data/temp_vor_w.mat", "../data/temp_vor_o.mat", scale=1)
-    datasets_lat = load_tr_te_od_data("../data/temp_lat_w.mat", "../data/temp_lat_o.mat", scale=1)
-    datasets = dict()
-    for key in datasets_vor:
-        datasets[key] = datasets_vor[key] + datasets_lat[key]
-    
-    vor_model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
-    args = dict(model=vor_model, dataset=datasets_vor["tr"], valset=datasets_vor["te"])
-    train_model_to_file(args, "../models/temp_vor_model.pth")
-
-    lat_model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
-    args = dict(model=lat_model, dataset=datasets_lat["tr"], valset=datasets_lat["te"])
-    train_model_to_file(args, "../models/temp_lat_model.pth")
-
-    model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
-    args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"])
-    train_model_to_file(args, "../models/temp_multi_model_6.pth")
-
-def train_diff_layer_models():
+def train_different_layer_models():
     datasets_vor = load_tr_te_od_data("../data/stress_vor_w.mat", "../data/stress_vor_o.mat")
     datasets_lat = load_tr_te_od_data("../data/stress_lat_w.mat", "../data/stress_lat_o.mat")
     datasets = dict()
@@ -80,6 +65,6 @@ def train_diff_layer_models():
         train_model_to_file(args, f"../models/multi_model_{i+1}.pth")
 
 if __name__ == "__main__":
-    train_stress_models()
-    train_temp_models()
-    train_diff_layer_models()
+    train_individual_models("stress")
+    train_individual_models("temp")
+    train_different_layer_models()

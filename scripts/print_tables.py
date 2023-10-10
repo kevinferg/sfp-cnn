@@ -50,4 +50,4 @@ def generate_r2_table(dset):
 
 if __name__ == "__main__":
     generate_r2_table("stress")
-    # generate_r2_table("temp")
+    generate_r2_table("temp")
