@@ -79,6 +79,10 @@ def plot_temperature_visualizations(output_file="visualize-temperature"):
         os.remove(file)
 
 def plot_r2_figures():
+    if os.path.exists(to_path("box")) and os.path.exists(to_path("violin")) and os.path.exists(to_path("parametric-study")):
+        print("Skipping box plot, violin plot, and parametric study plot")
+        return
+    print("Creating box plot, violin plot, and parametric study plot")
     _, _, datasets = get_datasets("stress")
     layer_counts = np.arange(1, 6 + 1)
     r2s = dict(tr=[],te=[],od=[])
@@ -103,7 +107,28 @@ def plot_r2_figures():
     plt.legend(loc="lower right")
     plt.savefig(to_path("parametric-study"), bbox_inches="tight")
 
+def plot_high_resolution(output_file="visualize-coarse-fine"):
+    output_file = to_path(output_file)
+    print(f"Creating high-resolution visualization figure: {output_file}")
+    if os.path.exists(output_file):
+        print("Figure already exists. Skipping.")
+        return
+
+    coarse_data = load_matlab_dataset("../data/stress_vor_w.mat")
+    fine_data = load_matlab_dataset("../data/stress_vor_fine.mat")
+    model = torch.load("../models/multi_model_6.pth")
+    files = ["tmp-coarse.png", "tmp-fine.png"]
+
+    i = 1
+    plot_comparison(model, coarse_data[i], filename=files[0], dpi=DPI)
+    plot_comparison(model, fine_data[i], filename=files[1], size=1, dpi=DPI)
+
+    stack_images(files, output_file)
+    for file in files:
+        os.remove(file)
+
 if __name__ == "__main__":
     plot_stress_visualizations()
     plot_temperature_visualizations()
     plot_r2_figures()
+    plot_high_resolution()

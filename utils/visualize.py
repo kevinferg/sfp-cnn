@@ -63,9 +63,8 @@ def plot_data(data, colors="black", color_bounds=None, label = None, size=30, wi
                         color_bounds=color_bounds, label=label, linewidth=width, colorbar=colorbar)
     return handle
 
-def plot_comparison(model, data, filename=None, dpi=300):
+def plot_comparison(model, data, filename=None, dpi=300, size=15):
     plt.figure(figsize=(16,5), dpi=dpi)
-    size=15
 
     plt.subplot(1,4,1)
     plot_data(data, data.y, size=size, label="Ground Truth", color_bounds=[0,])
