@@ -4,16 +4,14 @@ import torch
 from evaluate import *
 import matplotlib.image as mpimg
 
-def plot_graph(xy, edges, node_color='black', edge_color=None, node_size = 100, 
+def plot_graph(xy, node_color='black', node_size = 100, 
                color_bounds = None, label = None, linewidth = 1, colorbar=True):
     ''' 
     plot_graph: Plots a 2D graph's nodes and edges on the current axes
     
     Args:
     xy - Two-column array with coordinates: [x, y]
-    edges - Array of node index pairs for each 1-directional edge
     node_color - Color string, array, or rgb triple, defaults to 'black'
-    edge_color - Color string or rgb triple for each edge (None: no edges)
     node_size - Size of each node, defaults to 100
     color_bounds - [value of lowest color, value of highest color], when node_color is an array
     label - Name of the plot for use in a legend (optional)
@@ -24,12 +22,6 @@ def plot_graph(xy, edges, node_color='black', edge_color=None, node_size = 100,
 
     x = xy[:,0]
     y = xy[:,1]
-
-
-    if edge_color is not None:
-        edges = edges[:,edges[0,:] < edges[1,:]]
-        for edge in edges.T:
-            plt.plot([x[edge[0]],x[edge[1]]], [y[edge[0]],y[edge[1]]], c=edge_color, alpha=.5, zorder=0, linewidth=linewidth)
     
     if label is not None:
         title_height = 0.88
@@ -64,12 +56,10 @@ def plot_graph(xy, edges, node_color='black', edge_color=None, node_size = 100,
     plt.axis("off")
     return handle
 
-def plot_data(data, colors="black", show_edges=False, color_bounds=None, label = None, size=30, width=1, colorbar=True):
+def plot_data(data, colors="black", color_bounds=None, label = None, size=30, width=1, colorbar=True):
     xy = data.x[:,:2].detach().numpy()
-    edges = data.edge_index.detach().numpy()
     node_color = colors.detach().numpy() if type(colors) == torch.Tensor else colors
-    edge_color = "black" if show_edges else None
-    handle = plot_graph(xy, edges, node_color=node_color, edge_color=edge_color, node_size=size, 
+    handle = plot_graph(xy, node_color=node_color, node_size=size, 
                         color_bounds=color_bounds, label=label, linewidth=width, colorbar=colorbar)
     return handle
 
@@ -78,13 +68,13 @@ def plot_comparison(model, data, filename=None, dpi=300):
     size=15
 
     plt.subplot(1,4,1)
-    plot_data(data, data.y, show_edges=False, size=size, label="Ground Truth", color_bounds=[0,])
+    plot_data(data, data.y, size=size, label="Ground Truth", color_bounds=[0,])
 
     plt.subplot(1,4,2)
-    plot_data(data, model(data), show_edges=False, size=size, label="Prediction", color_bounds=[0,])
+    plot_data(data, model(data), size=size, label="Prediction", color_bounds=[0,])
 
     plt.subplot(1,4,3)
-    plot_data(data, torch.abs(model(data) - data.y), show_edges=False, size=size, label="Absolute Error", color_bounds=[0,])
+    plot_data(data, torch.abs(model(data) - data.y), size=size, label="Absolute Error", color_bounds=[0,])
 
     ax = plt.subplot(1,4,4)
     plot_model_r2(model,data)
