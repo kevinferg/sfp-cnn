@@ -24,6 +24,11 @@ def get_datasets(dset):
     return datasets_vor, datasets_lat, datasets
 
 def plot_stress_visualizations(output_file="../figures/visualize-stress.png"):
+    print(f"Creating stress visualization figure: {output_file}")
+    if os.path.exists(output_file):
+        print("Figure already exists. Skipping.")
+        return
+
     model = torch.load("../models/multi_model_6.pth")
     _, _, datasets = get_datasets("stress")
     vals = eval_model_all(model, datasets["te"])
@@ -36,11 +41,34 @@ def plot_stress_visualizations(output_file="../figures/visualize-stress.png"):
        filename = f"tmp-{order[rank]}.png"
        plot_comparison(model, datasets["te"][order[rank]], filename=filename)
        files.append(filename)
+       
+    stack_images(files, output_file)
+    for file in files:
+        os.remove(file)
+
+def plot_temperature_visualizations(output_file="../figures/visualize-temperature.png"):
+    print(f"Creating temperature visualization figure: {output_file}")
+    if os.path.exists(output_file):
+        print("Figure already exists. Skipping.")
+        return
+
+    model = torch.load("../models/temp_multi_model_6.pth")
+    _, _, datasets = get_datasets("temp")
+    vals = eval_model_all(model, datasets["te"])
+    order = np.argsort(vals)
+    N = len(vals)
+    ##Near-median ranks hard-coded to give 1 voronoi & 1 lattice:
+    ranks = [-1, N//2 + 2, N//2, 0] 
+    files = []
+    for rank in ranks:
+       filename = f"tmp-{order[rank]}.png"
+       plot_comparison(model, datasets["te"][order[rank]], filename=filename)
+       files.append(filename)
 
     stack_images(files, output_file)
-    
     for file in files:
         os.remove(file)
 
 if __name__ == "__main__":
     plot_stress_visualizations()
+    plot_temperature_visualizations()
