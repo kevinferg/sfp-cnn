@@ -71,9 +71,9 @@ def eval_model_multiple(model, datasets):
         vals[key] = eval_model_all(model, datasets[key])
     return vals
 
-def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None):
+def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None, dpi=175):
     n = len(vals)
-    plt.figure(figsize=(2*n, 3.4), dpi=175)
+    plt.figure(figsize=(2*n, 3.4), dpi=dpi)
 
     vals_list = []
     ticklocs = []
@@ -82,7 +82,7 @@ def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distrib
     for i, key in enumerate(vals):
         vals_list.append(vals[key])
         ticklocs.append(i)
-        ticklabels.append(titles[key] + ", N=" + str(len(vals[key])))
+        ticklabels.append(f"{titles[key]}, N={len(vals[key])}")
 
     plt.boxplot(vals_list, positions=ticklocs)
     plt.xticks(ticklocs, ticklabels)
@@ -97,9 +97,9 @@ def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distrib
     else:
         plt.show()
 
-def plot_violins(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None):
+def plot_violins(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None, dpi=175):
     n = len(vals)
-    plt.figure(figsize=(2*n, 3.4), dpi=175)
+    plt.figure(figsize=(2*n, 3.4), dpi=dpi)
 
     vals_list = []
     ticklocs = []
@@ -108,7 +108,7 @@ def plot_violins(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distr
     for i, key in enumerate(vals):
         vals_list.append(vals[key])
         ticklocs.append(i)
-        ticklabels.append(titles[key] + ", N=" + str(len(vals[key])))
+        ticklabels.append(f"{titles[key]}, N={len(vals[key])}")
 
     plt.violinplot(vals_list, positions=ticklocs)
     plt.xticks(ticklocs, ticklabels)
