@@ -39,9 +39,13 @@ def generate_r2_table(dset):
     for key in datasets_vor:
         datasets[key] = datasets_vor[key] + datasets_lat[key]
 
-    model = torch.load("../models/multi_model_6.pth")
-    model_vor = torch.load("../models/vor_model.pth")
-    model_lat = torch.load("../models/lat_model.pth")
+    if dset == "temp":
+        dset_prefix = "temp_"
+    else:
+        dset_prefix = ""
+    model = torch.load(f"../models/{dset_prefix}multi_model_6.pth")
+    model_vor = torch.load(f"../models/{dset_prefix}vor_model.pth")
+    model_lat = torch.load(f"../models/{dset_prefix}lat_model.pth")
 
     vals = eval_model_multiple(model, datasets)
     vals_vor = eval_model_multiple(model_vor, datasets_vor)
