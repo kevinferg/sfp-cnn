@@ -1,0 +1,9 @@
+
+    \begin{tabular}{V{2} c V{2} c | c | c V{2}}\Xhline{2\arrayrulewidth}
+    \multirow{2}{*}{Dataset} & \multicolumn{3}{c V{2} }{Median $R^2$}\\\cline{2-4}
+        & Training & Testing & Out-of-Distribution\\\Xhline{2\arrayrulewidth}
+        Voronoi Set & 0.948 & 0.921 & 0.768\\
+        Lattice Set & 0.980 & 0.977 & 0.976\\
+        Combined Set & 0.925 & 0.911 & 0.881\\\Xhline{2\arrayrulewidth}
+    \end{tabular}
+    

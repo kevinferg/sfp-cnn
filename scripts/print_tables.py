@@ -31,8 +31,23 @@ def print_all_median_r2s(vals_vor, vals_lat, vals_both, filename):
     with open(filename, "w") as file:
         print(table_string %tuple(r2s), file=file)
 
-if __name__ == "__main__":
-    datasets = load_tr_te_od_data("../data/stress_vor_w.mat", "../data/stress_vor_o.mat")
+def generate_r2_table(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
+    datasets = dict()
+    for key in datasets_vor:
+        datasets[key] = datasets_vor[key] + datasets_lat[key]
+
     model = torch.load("../models/multi_model_6.pth")
+    model_vor = torch.load("../models/vor_model.pth")
+    model_lat = torch.load("../models/lat_model.pth")
+
     vals = eval_model_multiple(model, datasets)
-    print_all_median_r2s(vals, vals, vals, "../figures/r2_table.txt")
+    vals_vor = eval_model_multiple(model_vor, datasets_vor)
+    vals_lat = eval_model_multiple(model_lat, datasets_lat)
+    print_all_median_r2s(vals_vor, vals_lat, vals, f"../figures/r2_table_{dset}.txt")
+
+if __name__ == "__main__":
+    generate_r2_table("stress")
+    # generate_r2_table("temp")
