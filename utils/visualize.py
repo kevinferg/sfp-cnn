@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from evaluate import *
+import matplotlib.image as mpimg
 
 def plot_graph(xy, edges, node_color='black', edge_color=None, node_size = 100, 
                color_bounds = None, label = None, linewidth = 1, colorbar=True):
@@ -101,3 +102,26 @@ def plot_comparison(model, data, filename=None, dpi=300):
         plt.close()
     else:
         plt.show()
+
+def stack_images(image_paths, output_path):
+    images = []
+    height = 0
+    width = 0
+    depth = 3
+    for path in image_paths:
+        image = mpimg.imread(path)
+        if image.dtype == np.float32:
+            image = (image*255).astype(np.uint8)
+        images.append(image)
+        height = height + image.shape[0]
+        width = max(width, image.shape[1])
+        depth = max(depth, image.shape[2])
+
+    new_image = np.zeros((height, width, depth), dtype=np.uint8)
+
+    row = 0
+    for image in images:
+        new_image[row:(row+image.shape[0]), :image.shape[1], :image.shape[2]] = image
+        row += image.shape[0]
+
+    plt.imsave(output_path, new_image)
