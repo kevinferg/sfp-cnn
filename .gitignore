@@ -166,3 +166,6 @@ cython_debug/
 # Pytorch models
 *.pth
 *_log.txt
+
+# VS Code
+.vscode
