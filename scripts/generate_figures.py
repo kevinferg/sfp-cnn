@@ -15,8 +15,8 @@ from visualize import *
 from cnn_model import *
 
 DIR = "../figures/"
-EXT = ".png"
-DPI = 300
+EXT = ".eps"
+DPI = 266
 
 def to_path(name):
     return DIR + name + EXT
@@ -42,17 +42,9 @@ def plot_stress_visualizations(output_file="visualize-stress"):
     vals = eval_model_all(model, datasets["te"])
     order = np.argsort(vals)
     N = len(vals)
-    ##Near-median ranks hard-coded to give 1 voronoi & 1 lattice:
+    # Near-median ranks hard-coded to give 1 voronoi & 1 lattice:
     ranks = [-1, N//2 + 2, N//2, 0] 
-    files = []
-    for rank in ranks:
-       filename = f"tmp-{order[rank]}.png"
-       plot_comparison(model, datasets["te"][order[rank]], filename=filename, dpi=DPI)
-       files.append(filename)
-
-    stack_images(files, output_file)
-    for file in files:
-        os.remove(file)
+    plot_comparison(model, [datasets["te"][order[rank]] for rank in ranks], filename=output_file, dpi=DPI)
 
 def plot_temperature_visualizations(output_file="visualize-temperature"):
     output_file = to_path(output_file)
@@ -68,15 +60,7 @@ def plot_temperature_visualizations(output_file="visualize-temperature"):
     N = len(vals)
     # Near-median ranks hard-coded to give 1 voronoi & 1 lattice:
     ranks = [-1, N//2 + 2, N//2, 0] 
-    files = []
-    for rank in ranks:
-       filename = f"tmp-{order[rank]}.png"
-       plot_comparison(model, datasets["te"][order[rank]], filename=filename, dpi=DPI)
-       files.append(filename)
-
-    stack_images(files, output_file)
-    for file in files:
-        os.remove(file)
+    plot_comparison(model, [datasets["te"][order[rank]] for rank in ranks], filename=output_file, dpi=DPI)
 
 def plot_r2_figures():
     if os.path.exists(to_path("box")) and os.path.exists(to_path("violin")) and os.path.exists(to_path("parametric-study")):
@@ -117,15 +101,9 @@ def plot_high_resolution(output_file="visualize-coarse-fine"):
     coarse_data = load_matlab_dataset("../data/stress_vor_w.mat")
     fine_data = load_matlab_dataset("../data/stress_vor_fine.mat")
     model = torch.load("../models/multi_model_6.pth")
-    files = ["tmp-coarse.png", "tmp-fine.png"]
 
     i = 1
-    plot_comparison(model, coarse_data[i], filename=files[0], dpi=DPI)
-    plot_comparison(model, fine_data[i], filename=files[1], size=1, dpi=DPI)
-
-    stack_images(files, output_file)
-    for file in files:
-        os.remove(file)
+    plot_comparison(model, [coarse_data[i], fine_data[i]], filename=output_file, dpi=DPI)
 
 if __name__ == "__main__":
     plot_stress_visualizations()

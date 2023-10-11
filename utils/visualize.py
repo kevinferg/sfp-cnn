@@ -5,7 +5,7 @@ from evaluate import *
 import matplotlib.image as mpimg
 
 def plot_graph(xy, node_color='black', node_size = 100, 
-               color_bounds = None, label = None, linewidth = 1, colorbar=True):
+               color_bounds = None, label = None, linewidth = 1, colorbar=True, cmap="jet"):
     ''' 
     plot_graph: Plots a 2D graph's nodes and edges on the current axes
     
@@ -24,27 +24,27 @@ def plot_graph(xy, node_color='black', node_size = 100,
     y = xy[:,1]
     
     if label is not None:
-        title_height = 0.88
+        title_height = 0.9
         fontsize = 12
         plt.title(label, fontsize=fontsize, y=title_height)
 
     if type(node_color) == str:
-        handle = plt.scatter(x,y, s=node_size, c=node_color, zorder=1, label=label, cmap='jet')
+        handle = plt.scatter(x,y, s=node_size, c=node_color, zorder=1, label=label, cmap=cmap)
     else:
         if color_bounds is None:
             tick_min = np.round(np.min(node_color),3)
             tick_max = np.round(np.max(node_color),3)
         elif len(color_bounds) == 1:
-            tick_min = color_bounds[0]
+            tick_min = np.round(color_bounds[0],3)
             tick_max = np.round(np.max(node_color),3)
         else:
-            tick_min = color_bounds[0]
-            tick_max = color_bounds[1]
+            tick_min = np.round(color_bounds[0],3)
+            tick_max = np.round(color_bounds[1],3)
         cb = dict(vmin=tick_min, vmax=tick_max)
         tick_min = cb["vmin"]
         tick_max = cb["vmax"]
         tick_med = np.round((tick_min + tick_max)/2,3)
-        handle = plt.scatter(x,y, s=node_size, c=node_color, zorder=1, label=label, cmap='jet', **cb)
+        handle = plt.scatter(x,y, s=node_size, c=node_color, zorder=1, label=label, cmap=cmap, **cb)
 
         if colorbar:
             cbar_shrink = 0.9
@@ -56,35 +56,46 @@ def plot_graph(xy, node_color='black', node_size = 100,
     plt.axis("off")
     return handle
 
-def plot_data(data, colors="black", color_bounds=None, label = None, size=30, width=1, colorbar=True):
+def plot_data(data, colors="black", color_bounds=None, label = None, size=30, width=1, colorbar=True, cmap="jet"):
     xy = data.x[:,:2].detach().numpy()
     node_color = colors.detach().numpy() if type(colors) == torch.Tensor else colors
     handle = plot_graph(xy, node_color=node_color, node_size=size, 
-                        color_bounds=color_bounds, label=label, linewidth=width, colorbar=colorbar)
+                        color_bounds=color_bounds, label=label, linewidth=width, colorbar=colorbar, cmap=cmap)
     return handle
 
-def plot_comparison(model, data, filename=None, dpi=300, size=15):
-    plt.figure(figsize=(16,5), dpi=dpi)
+def plot_comparison(model, shapes, filename=None, dpi=300, size=15):
+    if type(shapes) != list and type(shapes) != tuple:
+        shapes = [shapes,]
+    N = len(shapes)
+    plt.figure(figsize=(16, 4.7*N), dpi=dpi)
+    rhs_axes = []
 
-    plt.subplot(1,4,1)
-    plot_data(data, data.y, size=size, label="Ground Truth", color_bounds=[0,])
+    for i, data in enumerate(shapes):
+        gt = data.y
+        pred = model(data)
+        maxval = max(torch.max(gt).detach().numpy(), torch.max(pred).detach().numpy())
+        maxerr = np.max(torch.abs(gt-pred).detach().numpy())
 
-    plt.subplot(1,4,2)
-    plot_data(data, model(data), size=size, label="Prediction", color_bounds=[0,])
+        plt.subplot(N,4,1+i*4)
+        plot_data(data, data.y, size=size, label="Ground Truth", color_bounds=[0,maxval])
 
-    plt.subplot(1,4,3)
-    plot_data(data, torch.abs(model(data) - data.y), size=size, label="Absolute Error", color_bounds=[0,])
+        plt.subplot(N,4,2+i*4)
+        plot_data(data, model(data), size=size, label="Prediction", color_bounds=[0,maxval])
 
-    ax = plt.subplot(1,4,4)
-    plot_model_r2(model,data)
-    plt.axis("scaled")
+        plt.subplot(N,4,3+i*4)
+        plot_data(data, pred - gt, size=size, label="Prediction $-$ Ground Truth", color_bounds=[-maxerr, maxerr], cmap="bwr")
+
+        ax = plt.subplot(N,4,4+i*4)
+        plot_model_r2(model, data)
+        plt.axis("scaled")
+        rhs_axes.append(ax)
 
     plt.tight_layout()
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.15, hspace=None)
-
-    pos1 = ax.get_position() # get the original position 
-    pos2 = [pos1.x0 + 0.01, pos1.y0 + 0.06,  pos1.width * 0.9, pos1.height * 0.9] 
-    ax.set_position(pos2) # set a new position
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.15, hspace=0)
+    for ax in rhs_axes:
+        pos1 = ax.get_position() # get the original position 
+        pos2 = [pos1.x0 + 0.01, pos1.y0 + 0.04/N,  pos1.width * 0.9, pos1.height * 0.9] 
+        ax.set_position(pos2) # set a new position
 
     if filename is not None:
         plt.savefig(filename, bbox_inches = "tight")
