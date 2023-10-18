@@ -12,6 +12,15 @@ from training import *
 from evaluate import *
 from cnn_model import *
 
+def get_datasets(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
+    datasets = dict()
+    for key in datasets_vor:
+        datasets[key] = datasets_vor[key] + datasets_lat[key]
+    return datasets_vor, datasets_lat, datasets
+
 def print_all_median_r2s(vals_vor, vals_lat, vals_both, filename):
     table_string = r"""
     \begin{tabular}{V{2} c V{2} c | c | c V{2}}\Xhline{2\arrayrulewidth}
@@ -52,6 +61,50 @@ def generate_r2_table(dset):
     vals_lat = eval_model_multiple(model_lat, datasets_lat)
     print_all_median_r2s(vals_vor, vals_lat, vals, f"../figures/r2_table_{dset}.txt")
 
+def generate_parametric_table(filename):
+    table_string = r"""
+    \begin{tabular}{V{3} c V{2} c | c V{3} c | c | c V{3}}\Xhline{3\arrayrulewidth}
+    \multicolumn{3}{V{3} c V{3} }{ Model Information } & \multicolumn{3}{c V{3} }{Median $R^2$}\\\Xhline{2\arrayrulewidth}
+    Pooling Layers & Parameters & Training Time & Training & Testing & Out-of-Distribution\\\Xhline{2\arrayrulewidth}
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        %d & %d & %0.1f min. & %0.3f & %0.3f & %0.3f\\
+        \Xhline{3\arrayrulewidth}
+    \end{tabular}
+    """
+
+    _, _, datasets = get_datasets("stress")
+    layer_counts = np.arange(1, 6 + 1)
+    r2s = dict(tr=[],te=[],od=[])
+    params = []
+    for i in layer_counts:
+        model = torch.load(f"../models/multi_model_{i}.pth")
+        vals = eval_model_multiple(model, datasets)
+        for key in r2s:
+            r2s[key].append(np.median(vals[key]))
+        params.append(sum(p.numel() for p in model.parameters() if p.requires_grad))
+    
+    # For now, hard-code these because it is easier than parsing the text files I stored them in
+    times = [21.7, 33.2, 41.5, 50.8, 61.2, 68.1]
+
+    entries = []
+    for i in range(6):
+        entries.append(i+1)
+        entries.append(params[i])
+        entries.append(times[i])
+        entries.append(r2s["tr"][i])
+        entries.append(r2s["te"][i])
+        entries.append(r2s["od"][i])
+
+    with open(filename, "w") as file:
+        print(table_string %tuple(entries), file=file)
+
+
+
 if __name__ == "__main__":
-    generate_r2_table("stress")
-    generate_r2_table("temp")
+    #generate_r2_table("stress")
+    #generate_r2_table("temp")
+    generate_parametric_table("../figures/param_table.txt")

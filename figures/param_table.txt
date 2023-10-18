@@ -1,0 +1,13 @@
+
+    \begin{tabular}{V{3} c V{2} c | c V{3} c | c | c V{3}}\Xhline{3\arrayrulewidth}
+    \multicolumn{3}{V{3} c V{3} }{ Model Information } & \multicolumn{3}{c V{3} }{Median $R^2$}\\\Xhline{2\arrayrulewidth}
+    Pooling Layers & Parameters & Training Time & Training & Testing & Out-of-Distribution\\\Xhline{2\arrayrulewidth}
+        1 & 36973 & 21.7 min. & -0.234 & -0.222 & -0.316\\
+        2 & 48913 & 33.2 min. & 0.526 & 0.529 & 0.444\\
+        3 & 60853 & 41.5 min. & 0.801 & 0.792 & 0.731\\
+        4 & 72793 & 50.8 min. & 0.896 & 0.880 & 0.840\\
+        5 & 84733 & 61.2 min. & 0.922 & 0.908 & 0.885\\
+        6 & 96673 & 68.1 min. & 0.925 & 0.911 & 0.881\\
+        \Xhline{3\arrayrulewidth}
+    \end{tabular}
+    
