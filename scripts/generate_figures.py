@@ -16,7 +16,7 @@ from cnn_model import *
 
 DIR = "../figures/"
 EXT = ".eps"
-DPI = 266
+DPI = 300
 
 def to_path(name):
     return DIR + name + EXT
@@ -59,7 +59,7 @@ def plot_temperature_visualizations(output_file="visualize-temperature"):
     order = np.argsort(vals)
     N = len(vals)
     # Near-median ranks hard-coded to give 1 voronoi & 1 lattice:
-    ranks = [-1, N//2 + 2, N//2, 0] 
+    ranks = [N//2 + 2, N//2] # [-1, N//2 + 2, N//2, 0] 
     plot_comparison(model, [datasets["te"][order[rank]] for rank in ranks], filename=output_file, dpi=DPI)
 
 def plot_r2_figures():

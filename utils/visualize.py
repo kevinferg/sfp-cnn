@@ -24,7 +24,7 @@ def plot_graph(xy, node_color='black', node_size = 100,
     y = xy[:,1]
     
     if label is not None:
-        title_height = 0.9
+        title_height = 0.96
         fontsize = 12
         plt.title(label, fontsize=fontsize, y=title_height)
 
@@ -47,8 +47,8 @@ def plot_graph(xy, node_color='black', node_size = 100,
         handle = plt.scatter(x,y, s=node_size, c=node_color, zorder=1, label=label, cmap=cmap, **cb)
 
         if colorbar:
-            cbar_shrink = 0.9
-            cbar_pad = -0.1
+            cbar_shrink = 0.93
+            cbar_pad = -0.02
             bar = plt.colorbar(shrink=cbar_shrink, location='bottom', pad=cbar_pad, ticks=[tick_min, tick_med, tick_max])
             bar.ax.set_xticklabels([tick_min, tick_med, tick_max])
 
@@ -67,23 +67,24 @@ def plot_comparison(model, shapes, filename=None, dpi=300, size=15):
     if type(shapes) != list and type(shapes) != tuple:
         shapes = [shapes,]
     N = len(shapes)
-    plt.figure(figsize=(16, 4.7*N), dpi=dpi)
+    plt.figure(figsize=(16, 4.6*N), dpi=dpi)
     rhs_axes = []
 
     for i, data in enumerate(shapes):
         gt = data.y
         pred = model(data)
+        s = size / (1 + 7*(3000<data.x.shape[0]))
         maxval = max(torch.max(gt).detach().numpy(), torch.max(pred).detach().numpy())
         maxerr = np.max(torch.abs(gt-pred).detach().numpy())
 
         plt.subplot(N,4,1+i*4)
-        plot_data(data, data.y, size=size, label="Ground Truth", color_bounds=[0,maxval])
+        plot_data(data, data.y, size=s, label="Ground Truth", color_bounds=[0,maxval])
 
         plt.subplot(N,4,2+i*4)
-        plot_data(data, model(data), size=size, label="Prediction", color_bounds=[0,maxval])
+        plot_data(data, model(data), size=s, label="Prediction", color_bounds=[0,maxval])
 
         plt.subplot(N,4,3+i*4)
-        plot_data(data, pred - gt, size=size, label="Prediction $-$ Ground Truth", color_bounds=[-maxerr, maxerr], cmap="bwr")
+        plot_data(data, pred - gt, size=s, label="Prediction $-$ Ground Truth", color_bounds=[-maxerr, maxerr], cmap="bwr")
 
         ax = plt.subplot(N,4,4+i*4)
         plot_model_r2(model, data)
@@ -91,10 +92,10 @@ def plot_comparison(model, shapes, filename=None, dpi=300, size=15):
         rhs_axes.append(ax)
 
     plt.tight_layout()
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.15, hspace=0)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.14, hspace=0)
     for ax in rhs_axes:
         pos1 = ax.get_position() # get the original position 
-        pos2 = [pos1.x0 + 0.01, pos1.y0 + 0.04/N,  pos1.width * 0.9, pos1.height * 0.9] 
+        pos2 = [pos1.x0 + 0.01, pos1.y0 + 0.1/N,  pos1.width * 0.9, pos1.height * 0.9] 
         ax.set_position(pos2) # set a new position
 
     if filename is not None:
