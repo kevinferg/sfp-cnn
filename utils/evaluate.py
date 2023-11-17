@@ -71,7 +71,7 @@ def eval_model_multiple(model, datasets):
         vals[key] = eval_model_all(model, datasets[key])
     return vals
 
-def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None, dpi=175):
+def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Dist."), lims = [-0.25, 1], filename = None, dpi=175):
     n = len(vals)
     plt.figure(figsize=(2*n, 3.4), dpi=dpi)
 
@@ -97,7 +97,7 @@ def plot_boxes(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distrib
     else:
         plt.show()
 
-def plot_violins(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Distribution"), lims = [-0.25, 1], filename = None, dpi=175):
+def plot_violins(vals, titles=dict(tr="Training", te="Testing", od="Out-of-Dist."), lims = [-0.25, 1], filename = None, dpi=175):
     n = len(vals)
     plt.figure(figsize=(2*n, 3.4), dpi=dpi)
 
