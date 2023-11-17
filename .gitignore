@@ -172,3 +172,7 @@ cython_debug/
 
 # Notebooks used for testing
 *.ipynb
+
+# Figures
+figures/*.eps
+figures/*.png
