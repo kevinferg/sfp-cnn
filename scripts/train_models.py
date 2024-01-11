@@ -68,16 +68,20 @@ def train_smaller_dataset_models():
     datasets_vor = load_tr_te_od_data("../data/stress_vor_w.mat", "../data/stress_vor_o.mat")
     datasets_lat = load_tr_te_od_data("../data/stress_lat_w.mat", "../data/stress_lat_o.mat")
     id = datasets_vor["tr"] + datasets_lat["tr"] + datasets_vor["te"] + datasets_vor["te"]
-    # od = datasets_vor["od"] + datasets_lat["od"]
+    od = datasets_vor["od"] + datasets_lat["od"]
 
     Ns = [50, 100, 200, 400, 800]
 
     for N in Ns:
         frac = N/len(id)
         tr, te = split_data(id, *get_split_indices(id, frac))
-        model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
-        args = dict(model=model, dataset=tr, valset=te)
-        train_model_to_file(args, f"../models/small_model_{N}.pth")
+        model = torch.load(f"../models/small_model_{N}.pth")
+        model.r2s = eval_model_multiple(model, dict(tr=tr, te=te, od=od))
+        #model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
+        #args = dict(model=model, dataset=tr, valset=te)
+        #train_model_to_file(args, f"../models/small_model_{N}.pth")
+        torch.save(model, f"../models/small_model_{N}.pth")
+        print(f"Saved model {N}")
 
 if __name__ == "__main__":
     train_individual_models("stress")
