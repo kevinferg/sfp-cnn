@@ -103,8 +103,50 @@ def generate_parametric_table(filename):
         print(table_string %tuple(entries), file=file)
 
 
+def generate_less_data_table(filename):
+    table_string = r"""
+    \begin{tabular}{V{2} c V{2} c | c | c V{2}}\Xhline{2\arrayrulewidth}
+        \multirow{2}{*}{Size of} & \multicolumn{3}{c V{2} }{Median $R^2$}\\\cline{2-4}
+    Training Set & Training & Testing & Out-of-Dist.\\\Xhline{2\arrayrulewidth}
+        %d & %0.3f & %0.3f & %0.3f\\
+        %d & %0.3f & %0.3f & %0.3f\\
+        %d & %0.3f & %0.3f & %0.3f\\
+        %d & %0.3f & %0.3f & %0.3f\\
+        %d & %0.3f & %0.3f & %0.3f\\
+        %d & %0.3f & %0.3f & %0.3f\\
+        \Xhline{3\arrayrulewidth}
+    \end{tabular}
+    """
+
+    Ns = [50,100,200,400,800]
+    r2s = dict(tr=[],te=[],od=[])
+    params = []
+    for i in Ns:
+        model = torch.load(f"../models/small_model_{i}.pth")
+        vals = model.r2s
+        for key in r2s:
+            r2s[key].append(np.median(vals[key]))
+    
+    # For now, hard-code these because it is easier than parsing the text files I stored them in
+    # times = [1.7, 3.5, 7.4, 15.6, 34.1]
+
+    entries = []
+    for i in range(len(Ns)):
+        entries.append(Ns[i])
+        entries.append(r2s["tr"][i])
+        entries.append(r2s["te"][i])
+        entries.append(r2s["od"][i])
+
+    # Hard-code results for model with 1600 training points
+    entries = entries + [1600,0.925,0.911,0.881]
+
+    with open(filename, "w") as file:
+        print(table_string %tuple(entries), file=file)
+
+
 
 if __name__ == "__main__":
     #generate_r2_table("stress")
     #generate_r2_table("temp")
-    generate_parametric_table("../figures/param_table.txt")
+    #generate_parametric_table("../figures/param_table.txt")
+    generate_less_data_table("../figures/less_data.txt")

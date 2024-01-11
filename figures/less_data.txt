@@ -1,0 +1,13 @@
+
+    \begin{tabular}{V{3} c V{2} c | c V{3} c | c | c V{3}}\Xhline{3\arrayrulewidth}
+    \multicolumn{2}{V{3} c V{3} }{ Model Information } & \multicolumn{3}{c V{3} }{Median $R^2$}\\\Xhline{2\arrayrulewidth}
+    Training Data Size & Training Time & Training & Testing & Out-of-Distribution\\\Xhline{2\arrayrulewidth}
+        50 & 1.7 min. & 0.822 & 0.627 & 0.600\\
+        100 & 3.5 min. & 0.808 & 0.713 & 0.626\\
+        200 & 7.4 min. & 0.894 & 0.822 & 0.780\\
+        400 & 15.6 min. & 0.910 & 0.858 & 0.808\\
+        800 & 34.1 min. & 0.927 & 0.900 & 0.864\\
+        1600 & 68.1 min. & 0.925 & 0.911 & 0.881\\
+        \Xhline{3\arrayrulewidth}
+    \end{tabular}
+    
