@@ -75,11 +75,10 @@ def train_smaller_dataset_models():
     for N in Ns:
         frac = N/len(id)
         tr, te = split_data(id, *get_split_indices(id, frac))
-        model = torch.load(f"../models/small_model_{N}.pth")
+        model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
+        args = dict(model=model, dataset=tr, valset=te)
+        train_model_to_file(args, f"../models/small_model_{N}.pth")
         model.r2s = eval_model_multiple(model, dict(tr=tr, te=te, od=od))
-        #model = MultiNet(kernel_size=5, num_layers = 6, num_filters=20)
-        #args = dict(model=model, dataset=tr, valset=te)
-        #train_model_to_file(args, f"../models/small_model_{N}.pth")
         torch.save(model, f"../models/small_model_{N}.pth")
         print(f"Saved model {N}")
 
