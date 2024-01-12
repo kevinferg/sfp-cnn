@@ -11,6 +11,7 @@ from load_data import *
 from training import *
 from evaluate import *
 from cnn_model import *
+from unet_model import *
 
 
 def train_model_to_file(args, filename):
@@ -82,9 +83,28 @@ def train_smaller_dataset_models():
         torch.save(model, f"../models/small_model_{N}.pth")
         print(f"Saved model {N}")
 
-if __name__ == "__main__":
-    train_individual_models("stress")
-    train_individual_models("temp")
-    train_different_layer_models()
+def train_unet(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
+    datasets = dict()
+    for key in datasets_vor:
+        datasets[key] = datasets_vor[key] + datasets_lat[key]
 
-    train_smaller_dataset_models()
+    if dset == "temp":
+        dset = "temp_"
+    else:
+        dset = "stress_"
+
+    model = InterpolatedUNet(n_in = 1, filter_sizes=[4,8,16,32,64],n_out=1) #[6,12,18,24,30,36]
+    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+    args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"])
+    train_model_to_file(args, f"../models/{dset}unet2.pth")
+
+if __name__ == "__main__":
+    #train_individual_models("stress")
+    #train_individual_models("temp")
+    #train_different_layer_models()
+    #train_smaller_dataset_models()
+    train_unet("stress")
+    train_unet("temp")
