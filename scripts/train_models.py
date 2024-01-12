@@ -91,15 +91,11 @@ def train_unet(dset):
     for key in datasets_vor:
         datasets[key] = datasets_vor[key] + datasets_lat[key]
 
-    if dset == "temp":
-        dset = "temp_"
-    else:
-        dset = "stress_"
 
-    model = InterpolatedUNet(n_in = 1, filter_sizes=[4,8,16,32,64],n_out=1) #[6,12,18,24,30,36]
+    model = InterpolatedUNet(n_in = 1, filter_sizes=[8,16,32,64,128],n_out=1) #[6,12,18,24,30,36]
     print(sum(p.numel() for p in model.parameters() if p.requires_grad))
     args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"])
-    train_model_to_file(args, f"../models/{dset}unet2.pth")
+    train_model_to_file(args, f"../models/{dset}_unet2.pth")
 
 if __name__ == "__main__":
     #train_individual_models("stress")
