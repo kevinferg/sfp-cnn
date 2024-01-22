@@ -145,20 +145,20 @@ def generate_less_data_table(filename):
 
 def generate_unet_table(filename):
     table_string = r"""
-    \begin{tabular}{V{2} c V{2} c | c | c V{2}}\Xhline{2\arrayrulewidth}
-    \multirow{2}{*}{Dataset} & \multicolumn{3}{c V{2} }{Median $R^2$}\\\cline{2-4}
-        & Training & Testing & Out-of-Distribution\\\Xhline{2\arrayrulewidth}
-        Interpolated U-Net & %0.3f & %0.3f & %0.3f\\
-        Interpolated MultiResolution CNN & %0.3f & %0.3f & %0.3f\\
-        Interpolated U-Net & %0.3f & %0.3f & %0.3f\\
-        Interpolated MultiResolution CNN & %0.3f & %0.3f & %0.3f\\\\\Xhline{2\arrayrulewidth}
+    \begin{tabular}{V{3} c V{3} c V{3} c | c | c V{3}}\Xhline{3\arrayrulewidth}
+    \multirow{2}{*}{Field} & \multirow{2}{*}{Model} & \multicolumn{3}{c V{3} }{Median $R^2$}\\\cline{3-5}
+        & & Training & Testing & Out-of-Distribution\\\Xhline{3\arrayrulewidth}
+        \multirow{2}{*}{Stress} & Interpolated U-Net & %0.3f & %0.3f & %0.3f\\
+        & \textbf{Interpolated Multi-Resolution CNN} & %0.3f & %0.3f & %0.3f\\\hline
+        \multirow{2}{*}{Temperature} & Interpolated U-Net & %0.3f & %0.3f & %0.3f\\
+        & \textbf{Interpolated Multi-Resolution CNN} & %0.3f & %0.3f & %0.3f\\\Xhline{3\arrayrulewidth}
     \end{tabular}
     """
     entries = []
 
     _, _, datasets = get_datasets("stress")
     
-    model = torch.load(f"../models/stress_unet2.pth")
+    model = torch.load(f"../models/stress_unet.pth")
     vals = eval_model_multiple(model, datasets)
     for key in ["tr", "te", "od"]:
         entries.append(np.median(vals[key]))
@@ -171,7 +171,7 @@ def generate_unet_table(filename):
 
     _, _, datasets = get_datasets("temp")
     
-    model = torch.load(f"../models/temp_unet2.pth")
+    model = torch.load(f"../models/temp_unet.pth")
     vals = eval_model_multiple(model, datasets)
     for key in ["tr", "te", "od"]:
         entries.append(np.median(vals[key]))
@@ -185,10 +185,28 @@ def generate_unet_table(filename):
     with open(filename, "w") as file:
         print(table_string %tuple(entries), file=file)
 
+def generate_r2_table_unet(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
+    datasets = dict()
+    for key in datasets_vor:
+        datasets[key] = datasets_vor[key] + datasets_lat[key]
+
+    model = torch.load(f"../models/{dset}_combined_unet.pth")
+    model_vor = torch.load(f"../models/{dset}_vor_unet.pth")
+    model_lat = torch.load(f"../models/{dset}_lat_unet.pth")
+
+    vals = eval_model_multiple(model, datasets)
+    vals_vor = eval_model_multiple(model_vor, datasets_vor)
+    vals_lat = eval_model_multiple(model_lat, datasets_lat)
+    print_all_median_r2s(vals_vor, vals_lat, vals, f"../figures/r2_table_{dset}_unet.txt")
+
 
 if __name__ == "__main__":
-    #generate_r2_table("stress")
-    #generate_r2_table("temp")
-    #generate_parametric_table("../figures/param_table.txt")
-    #generate_less_data_table("../figures/less_data.txt")
+    generate_r2_table("stress")
+    generate_r2_table("temp")
+    generate_parametric_table("../figures/param_table.txt")
+    generate_less_data_table("../figures/less_data.txt")
     generate_unet_table("../figures/unet_table.txt")
+    generate_r2_table_unet("stress")

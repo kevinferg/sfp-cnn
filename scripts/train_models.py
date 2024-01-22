@@ -92,15 +92,40 @@ def train_unet(dset):
         datasets[key] = datasets_vor[key] + datasets_lat[key]
 
 
-    model = InterpolatedUNet(n_in = 1, filter_sizes=[8,16,32,64,128],n_out=1) #[6,12,18,24,30,36]
+    model = InterpolatedUNet(n_in = 1, filter_sizes=[12,18,24,30,36],n_out=1)
     print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-    args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"])
-    train_model_to_file(args, f"../models/{dset}_unet2.pth")
+    args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"], epochs=100)
+    train_model_to_file(args, f"../models/{dset}_unet.pth")
+
+
+def train_unet_individual(dset):
+    scale = 1 if dset=="temp" else 10000
+    datasets_vor = load_tr_te_od_data(f"../data/{dset}_vor_w.mat", f"../data/{dset}_vor_o.mat", scale=scale)
+    datasets_lat = load_tr_te_od_data(f"../data/{dset}_lat_w.mat", f"../data/{dset}_lat_o.mat", scale=scale)
+    datasets = dict()
+    for key in datasets_vor:
+        datasets[key] = datasets_vor[key] + datasets_lat[key]
+
+    vor_model = InterpolatedUNet(n_in = 1, filter_sizes=[12,18,24,30,36],n_out=1)
+    print(sum(p.numel() for p in vor_model.parameters() if p.requires_grad))
+    args = dict(model=vor_model, dataset=datasets_vor["tr"], valset=datasets_vor["te"], epochs=100)
+    train_model_to_file(args, f"../models/{dset}_vor_unet.pth")
+
+    lat_model = InterpolatedUNet(n_in = 1, filter_sizes=[12,18,24,30,36],n_out=1)
+    print(sum(p.numel() for p in lat_model.parameters() if p.requires_grad))
+    args = dict(model=lat_model, dataset=datasets_lat["tr"], valset=datasets_lat["te"], epochs=100)
+    train_model_to_file(args, f"../models/{dset}_lat_unet.pth")
+
+    model = InterpolatedUNet(n_in = 1, filter_sizes=[12,18,24,30,36],n_out=1)
+    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+    args = dict(model=model, dataset=datasets["tr"], valset=datasets["te"], epochs=100)
+    train_model_to_file(args, f"../models/{dset}_combined_unet.pth")
 
 if __name__ == "__main__":
-    #train_individual_models("stress")
-    #train_individual_models("temp")
-    #train_different_layer_models()
-    #train_smaller_dataset_models()
+    train_individual_models("stress")
+    train_individual_models("temp")
+    train_different_layer_models()
+    train_smaller_dataset_models()
     train_unet("stress")
     train_unet("temp")
+    train_unet_individual("stress")
