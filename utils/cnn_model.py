@@ -129,12 +129,17 @@ def tensor_interp2d(grid, pts, epsilon = 1e-9, method = "smoothstep"):
     x_f, x_i = torch.frac(x).view(1,-1), torch.floor(x).long()
     y_f, y_i = torch.frac(y).view(1,-1), torch.floor(y).long()
 
-    bottom = step(grid[:, x_i, y_i],     grid[:, x_i + 1, y_i],     x_f)
-    top    = step(grid[:, x_i, y_i + 1], grid[:, x_i + 1, y_i + 1], x_f)
-    
-    left   = step(grid[:, x_i, y_i],     grid[:, x_i, y_i + 1],     y_f)
-    right  = step(grid[:, x_i + 1, y_i], grid[:, x_i + 1, y_i + 1], y_f)
-    
-    vals = 0.5 * step(left, right, x_f) + 0.5 * step(bottom, top, y_f)
+    # Sample the four surrounding corners 
+    nw = grid[:, x_i,     y_i    ]
+    ne = grid[:, x_i + 1, y_i    ]
+    sw = grid[:, x_i,     y_i + 1]
+    se = grid[:, x_i + 1, y_i + 1]
+
+    # Interpolate east-west at north and south rows
+    north = step(nw, ne, x_f)
+    south = step(sw, se, x_f)
+
+    # Interpolate north-south between the two rows
+    vals = step(north, south, y_f)
 
     return torch.transpose(vals, 0, 1)

@@ -176,3 +176,5 @@ cython_debug/
 # Figures
 figures/*.eps
 figures/*.png
+
+*.npy

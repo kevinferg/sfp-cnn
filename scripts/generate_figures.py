@@ -15,7 +15,7 @@ from visualize import *
 from cnn_model import *
 
 DIR = "../figures/"
-EXT = ".eps"
+EXT = ".png"
 DPI = 300
 
 def to_path(name):

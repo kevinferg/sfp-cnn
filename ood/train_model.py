@@ -1,6 +1,8 @@
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'utils'))
+sys.path.append('../utils')
 
 from cnn_model import *
 from evaluate import *
@@ -10,6 +12,7 @@ from visualize import *
 
 
 if __name__ == "__main__":
+
 
 
     ####################
